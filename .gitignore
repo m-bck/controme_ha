@@ -1,0 +1,32 @@
+# Python
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# IDE
+.vscode/
+
+# Logs and sessions
+*.log
+*.session
+
+# macOS
+.DS_Store
+
+# Backups
+backup_*.tar.gz
+
+# Local development and testing
+local_dev/
+ha_test_config/
+
+# HTML test files
+*.html
+
+# Old archive
+archive/
+HACS_ROADMAP.md

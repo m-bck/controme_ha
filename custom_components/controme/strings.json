@@ -1,0 +1,72 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Controme Smart-Heat-OS einrichten",
+                "description": "Geben Sie die Verbindungsdaten zu Ihrem Controme MiniServer ein.",
+                "data": {
+                    "host": "Host (z.B. http://192.168.1.100)",
+                    "username": "Benutzername",
+                    "password": "Passwort",
+                    "house_id": "Haus-ID (Standard: 1)"
+                },
+                "data_description": {
+                    "house_id": "Die Haus-ID aus dem Controme System. Bei mehreren Häusern kann die Integration mehrfach mit unterschiedlichen IDs hinzugefügt werden."
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Verbindung fehlgeschlagen. Überprüfen Sie Host und Netzwerk.",
+            "invalid_auth": "Ungültige Anmeldedaten",
+            "unknown": "Unerwarteter Fehler"
+        },
+        "abort": {
+            "already_configured": "Dieser Controme MiniServer ist bereits konfiguriert."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Optionen für Controme Smart-Heat-OS",
+                "description": "Konfigurieren Sie die Integration."
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "system_heating_demand": {
+                "name": "System-Heizbedarf"
+            },
+            "active_heating_rooms": {
+                "name": "Aktiv heizende Räume"
+            }
+        },
+        "number": {
+            "display_brightness": {
+                "name": "Display-Helligkeit"
+            },
+            "sensor_offset": {
+                "name": "Sensor-Offset"
+            }
+        },
+        "switch": {
+            "locked": {
+                "name": "Sperre"
+            },
+            "is_main_sensor": {
+                "name": "Hauptsensor"
+            }
+        },
+        "select": {
+            "device_type": {
+                "name": "Gerätetyp"
+            },
+            "room_assignment": {
+                "name": "Raum-Zuordnung"
+            }
+        }
+    },
+    "services": {
+        "description": "Hinweis: Änderungen an Thermostat-Einstellungen können aufgrund der Funk-Kommunikation bis zu 60 Sekunden dauern, bis sie auf dem physischen Gerät sichtbar werden."
+    }
+}
