@@ -2,13 +2,13 @@
     "domain": "controme",
     "name": "Controme Smart-Heat-OS (Unofficial)",
     "codeowners": [
-        "@maxibick"
+        "@m-bck"
     ],
     "config_flow": true,
-    "documentation": "https://github.com/maxibick/controme_ha",
+    "documentation": "https://github.com/m-bck/controme_ha",
     "integration_type": "hub",
     "iot_class": "local_polling",
-    "issue_tracker": "https://github.com/maxibick/controme_ha/issues",
+    "issue_tracker": "https://github.com/m-bck/controme_ha/issues",
     "requirements": [
         "controme-scraper>=0.1.0"
     ],

@@ -91,7 +91,7 @@ Configure thermostat parameters:
 
 ## Python API Library
 
-This integration uses the [`controme-scraper`](https://github.com/maxibick/controme_scraper) Python library, available on PyPI:
+This integration uses the [`controme-scraper`](https://github.com/m-bck/controme-scraper) Python library, available on PyPI:
 
 ```bash
 pip install controme-scraper
@@ -161,7 +161,7 @@ Contributions are welcome! Please open an issue or pull request.
 ## Links
 
 - **GitHub Repository (Integration)**: https://github.com/maxibick/controme_ha
-- **Python Library (PyPI)**: https://github.com/maxibick/controme_scraper
+- **Python Library (PyPI)**: https://github.com/m-bck/controme-scraper
 - **Home Assistant**: https://www.home-assistant.io/
 - **Controme Official Website**: https://www.controme.com/
 - **Controme Official API**: https://controme.com/api

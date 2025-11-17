@@ -93,8 +93,8 @@ If Controme GmbH requests changes or removal of this project:
 - 📧 Contact Controme GmbH directly
 
 **For this integration:**
-- 🐛 Issues: https://github.com/maxibick/controme_scraper/issues
-- 💬 Discussions: https://github.com/maxibick/controme_scraper/discussions
+- 🐛 Issues: https://github.com/m-bck/controme-scraper/issues
+- 💬 Discussions: https://github.com/m-bck/controme-scraper/discussions
 
 ## Acknowledgment
 

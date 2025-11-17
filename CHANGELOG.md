@@ -39,5 +39,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This is the first release of the separated Home Assistant integration repository.
 Previously, both the Python library and HA integration were in one repository.
 
-- **Python Library**: https://github.com/maxibick/controme_scraper (PyPI: `controme-scraper`)
+- **Python Library**: https://github.com/m-bck/controme-scraper (PyPI: `controme-scraper`)
 - **HA Integration**: https://github.com/maxibick/controme_ha (this repository)
