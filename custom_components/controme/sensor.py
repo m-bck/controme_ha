@@ -41,12 +41,20 @@ async def async_setup_entry(
     entities = [
         ContromeSystemHeatingDemandSensor(coordinator),
         ContromeActiveHeatingRoomsSensor(coordinator),
+        ContromeRoomBasedHeatingDemandSensor(coordinator),
+        ContromeRoomsHighDemandSensor(coordinator),
+        ContromeRoomsLowDemandSensor(coordinator),
     ]
 
     # Create valve position sensors for each thermostat
     thermostats = coordinator.data.get("thermostats", [])
     for thermostat in thermostats:
         if thermostat.valve_positions:
+            # Create average valve position sensor per room
+            entities.append(
+                ContromeRoomAverageValvePositionSensor(coordinator, thermostat.device_id)
+            )
+            
             # Create sensor for each valve assigned to this thermostat
             for idx, _ in enumerate(thermostat.valve_positions):
                 entities.append(
@@ -197,6 +205,309 @@ class ContromeActiveHeatingRoomsSensor(CoordinatorEntity, SensorEntity):
         
         return {
             "total_thermostats": len(thermostats),
+        }
+
+
+class ContromeRoomAverageValvePositionSensor(CoordinatorEntity, SensorEntity):
+    """Sensor for average valve position per room (thermostat)."""
+
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_device_class = None
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:gauge"
+
+    def __init__(
+        self,
+        coordinator: ContromeDataUpdateCoordinator,
+        device_id: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._attr_unique_id = f"controme_{device_id.replace('*', '_')}_avg_valve_position"
+        self._attr_name = "Average Valve Position"
+
+    def _get_thermostat(self):
+        """Get the thermostat from coordinator data."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        return next((t for t in thermostats if t.device_id == self._device_id), None)
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the average valve position for this room."""
+        thermostat = self._get_thermostat()
+        if not thermostat or not thermostat.valve_positions:
+            return None
+        
+        # Calculate average of all valves in this room
+        valid_positions = [p for p in thermostat.valve_positions if p is not None]
+        if valid_positions:
+            return round(sum(valid_positions) / len(valid_positions), 1)
+        return None
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information - link to thermostat device."""
+        from .const import MODEL_THERMOSTAT
+        thermostat = self._get_thermostat()
+        if not thermostat:
+            return {}
+
+        return {
+            "identifiers": {(DOMAIN, thermostat.device_id)},
+            "name": thermostat.name,
+            "manufacturer": MANUFACTURER,
+            "model": MODEL_THERMOSTAT,
+            "sw_version": thermostat.firmware_version,
+            "suggested_area": thermostat.room_name or thermostat.floor_name,
+        }
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        thermostat = self._get_thermostat()
+        if not thermostat:
+            return {}
+
+        attrs = {
+            "device_id": self._device_id,
+            "thermostat_name": thermostat.name,
+            "total_valves": len(thermostat.valve_positions) if thermostat.valve_positions else 0,
+            "is_heating": thermostat.is_heating,
+        }
+        
+        # Add individual valve positions for reference
+        if thermostat.valve_positions:
+            for idx, pos in enumerate(thermostat.valve_positions):
+                attrs[f"valve_{idx + 1}_position"] = pos
+        
+        return attrs
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        thermostat = self._get_thermostat()
+        return bool(thermostat and thermostat.valve_positions)
+
+
+class ContromeRoomBasedHeatingDemandSensor(CoordinatorEntity, SensorEntity):
+    """Sensor for system heating demand based on room averages (not individual valves)."""
+
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_device_class = None
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:gauge"
+
+    def __init__(self, coordinator: ContromeDataUpdateCoordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"controme_room_based_heating_demand"
+        self._attr_name = "Room-Based Heating Demand"
+
+    @property
+    def gateway(self) -> Gateway | None:
+        """Get the gateway data from coordinator."""
+        return self.coordinator.data.get("gateway")
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the average of all room average valve positions."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        room_averages = []
+        
+        for t in thermostats:
+            if t.valve_positions:
+                # Calculate average for this room
+                valid_positions = [p for p in t.valve_positions if p is not None]
+                if valid_positions:
+                    room_avg = sum(valid_positions) / len(valid_positions)
+                    room_averages.append(room_avg)
+        
+        if room_averages:
+            return round(sum(room_averages) / len(room_averages), 1)
+        return None
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information."""
+        gateway = self.gateway
+        if not gateway:
+            return {}
+
+        return {
+            "identifiers": {(DOMAIN, gateway.gateway_id)},
+            "name": gateway.name,
+            "manufacturer": MANUFACTURER,
+            "model": MODEL_GATEWAY,
+        }
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        
+        attrs = {
+            "total_rooms": len(thermostats),
+            "calculation_method": "room_average",
+        }
+        
+        # Add per-room averages for transparency
+        for t in thermostats:
+            if t.valve_positions:
+                valid_positions = [p for p in t.valve_positions if p is not None]
+                if valid_positions:
+                    room_avg = round(sum(valid_positions) / len(valid_positions), 1)
+                    safe_name = t.name.replace(" ", "_").lower()
+                    attrs[f"room_{safe_name}"] = room_avg
+        
+        return attrs
+
+
+class ContromeRoomsHighDemandSensor(CoordinatorEntity, SensorEntity):
+    """Sensor for number of rooms with high heating demand (avg valve position >80%)."""
+
+    _attr_has_entity_name = True
+    _attr_device_class = None
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:fire"
+
+    def __init__(self, coordinator: ContromeDataUpdateCoordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"controme_rooms_high_demand"
+        self._attr_name = "Rooms High Demand"
+
+    @property
+    def gateway(self) -> Gateway | None:
+        """Get the gateway data from coordinator."""
+        return self.coordinator.data.get("gateway")
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of rooms with average valve position >80%."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        high_demand_count = 0
+        
+        for t in thermostats:
+            if t.valve_positions:
+                valid_positions = [p for p in t.valve_positions if p is not None]
+                if valid_positions:
+                    room_avg = sum(valid_positions) / len(valid_positions)
+                    if room_avg > 80:
+                        high_demand_count += 1
+        
+        return high_demand_count
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information."""
+        gateway = self.gateway
+        if not gateway:
+            return {}
+
+        return {
+            "identifiers": {(DOMAIN, gateway.gateway_id)},
+            "name": gateway.name,
+            "manufacturer": MANUFACTURER,
+            "model": MODEL_GATEWAY,
+        }
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        
+        high_demand_rooms = []
+        for t in thermostats:
+            if t.valve_positions:
+                valid_positions = [p for p in t.valve_positions if p is not None]
+                if valid_positions:
+                    room_avg = sum(valid_positions) / len(valid_positions)
+                    if room_avg > 80:
+                        high_demand_rooms.append({
+                            "name": t.name,
+                            "average_position": round(room_avg, 1),
+                        })
+        
+        return {
+            "total_rooms": len(thermostats),
+            "threshold": 80,
+            "rooms": high_demand_rooms,
+        }
+
+
+class ContromeRoomsLowDemandSensor(CoordinatorEntity, SensorEntity):
+    """Sensor for number of rooms with low heating demand (avg valve position <20%)."""
+
+    _attr_has_entity_name = True
+    _attr_device_class = None
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:snowflake"
+
+    def __init__(self, coordinator: ContromeDataUpdateCoordinator) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"controme_rooms_low_demand"
+        self._attr_name = "Rooms Low Demand"
+
+    @property
+    def gateway(self) -> Gateway | None:
+        """Get the gateway data from coordinator."""
+        return self.coordinator.data.get("gateway")
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of rooms with average valve position <20%."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        low_demand_count = 0
+        
+        for t in thermostats:
+            if t.valve_positions:
+                valid_positions = [p for p in t.valve_positions if p is not None]
+                if valid_positions:
+                    room_avg = sum(valid_positions) / len(valid_positions)
+                    if room_avg < 20:
+                        low_demand_count += 1
+        
+        return low_demand_count
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information."""
+        gateway = self.gateway
+        if not gateway:
+            return {}
+
+        return {
+            "identifiers": {(DOMAIN, gateway.gateway_id)},
+            "name": gateway.name,
+            "manufacturer": MANUFACTURER,
+            "model": MODEL_GATEWAY,
+        }
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        thermostats = self.coordinator.data.get("thermostats", [])
+        
+        low_demand_rooms = []
+        for t in thermostats:
+            if t.valve_positions:
+                valid_positions = [p for p in t.valve_positions if p is not None]
+                if valid_positions:
+                    room_avg = sum(valid_positions) / len(valid_positions)
+                    if room_avg < 20:
+                        low_demand_rooms.append({
+                            "name": t.name,
+                            "average_position": round(room_avg, 1),
+                        })
+        
+        return {
+            "total_rooms": len(thermostats),
+            "threshold": 20,
+            "rooms": low_demand_rooms,
         }
 
 
