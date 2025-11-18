@@ -13,7 +13,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import CONF_HOUSE_ID, DEFAULT_HOUSE_ID, DOMAIN
-from controme_scraper.heizung import ContromeController
+from controme_scraper.controller import ContromeController
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -148,7 +148,7 @@ custom_components/controme/
 ├── translations/
 │   └── en.json              # UI Strings (EN)
 └── controme_scraper/        # Backend Modul
-    ├── heizung.py           # Main Controller
+    ├── controller.py           # Main Controller
     ├── models.py            # Data Models
     ├── parsers.py           # HTML Parsers
     ├── web_client.py        # HTTP Client
