@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
-from controme_scraper.heizung import ContromeController
+from controme_scraper.controller import ContromeController
 from controme_scraper.models import Gateway
 
 _LOGGER = logging.getLogger(__name__)
