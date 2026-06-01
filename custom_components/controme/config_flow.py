@@ -77,13 +77,37 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        """Initialise the config flow."""
+        self._http_warning_shown = False
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
-        
+        description_placeholders: dict[str, str] = {}
+
         if user_input is not None:
+            host = user_input.get(CONF_HOST, "").strip()
+            uses_http = host.startswith("http://") or (
+                not host.startswith("https://") and "://" not in host
+            )
+
+            if uses_http and not self._http_warning_shown:
+                self._http_warning_shown = True
+                errors["base"] = "http_insecure_warning"
+                description_placeholders["host"] = host
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self.add_suggested_values_to_schema(
+                        STEP_USER_DATA_SCHEMA, user_input
+                    ),
+                    errors=errors,
+                    description_placeholders=description_placeholders,
+                )
+
+            self._http_warning_shown = False
             try:
                 info = await validate_input(self.hass, user_input)
             except CannotConnect:
@@ -94,11 +118,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                # Create unique ID based on host and house_id
                 unique_id = f"{info['host']}_{info['house_id']}"
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
-                
+
                 return self.async_create_entry(
                     title=info["title"],
                     data={
@@ -113,6 +136,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
+            description_placeholders=description_placeholders,
         )
 
 

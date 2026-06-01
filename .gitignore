@@ -30,3 +30,12 @@ ha_test_config/
 # Old archive
 archive/
 HACS_ROADMAP.md
+
+# Secrets & credentials (precautionary)
+.env
+.env.*
+secrets.yaml
+*.key
+*.pem
+credentials.json
+.credentials

@@ -5,6 +5,15 @@ All notable changes to the Controme Home Assistant Integration will be documente
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-06-01
+
+### Security
+- Config flow now warns when a plain HTTP host is entered. Credentials are sent unencrypted over HTTP; the warning interrupts the flow and asks the user to confirm or switch to HTTPS before proceeding.
+
+### Changed
+- Added `http_insecure_warning` error string to `strings.json`.
+- Extended `.gitignore` with common secrets patterns (`.env`, `*.key`, `*.pem`, `credentials.json`).
+
 ## [1.1.0] - 2026-06-01
 
 ### Fixed

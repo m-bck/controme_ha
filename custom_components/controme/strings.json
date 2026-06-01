@@ -18,7 +18,8 @@
         "error": {
             "cannot_connect": "Verbindung fehlgeschlagen. Überprüfen Sie Host und Netzwerk.",
             "invalid_auth": "Ungültige Anmeldedaten",
-            "unknown": "Unerwarteter Fehler"
+            "unknown": "Unerwarteter Fehler",
+            "http_insecure_warning": "Warnung: Der Host verwendet HTTP. Anmeldedaten werden unverschlüsselt übertragen. Für lokale Netzwerke ist das akzeptabel — klicken Sie erneut auf Weiter um fortzufahren, oder verwenden Sie https:// für eine verschlüsselte Verbindung."
         },
         "abort": {
             "already_configured": "Dieser Controme MiniServer ist bereits konfiguriert."
