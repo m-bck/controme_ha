@@ -96,12 +96,16 @@ class ContromeSystemHeatingDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def gateway(self) -> Gateway | None:
         """Get the gateway data from coordinator."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("gateway")
 
     @property
     def native_value(self) -> float | None:
         """Return the system average valve position."""
         # Calculate from thermostats
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         all_positions = []
         for t in thermostats:
@@ -129,8 +133,10 @@ class ContromeSystemHeatingDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
+        if not self.coordinator.data:
+            return {}
         thermostats = self.coordinator.data.get("thermostats", [])
-        
+
         # Count active heating thermostats
         active_heating = sum(1 for t in thermostats if t.is_heating)
         
@@ -176,11 +182,15 @@ class ContromeActiveHeatingRoomsSensor(CoordinatorEntity, SensorEntity):
     @property
     def gateway(self) -> Gateway | None:
         """Get the gateway data from coordinator."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("gateway")
 
     @property
     def native_value(self) -> int | None:
         """Return the number of thermostats actively heating."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         return sum(1 for t in thermostats if t.is_heating)
 
@@ -201,8 +211,10 @@ class ContromeActiveHeatingRoomsSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
+        if not self.coordinator.data:
+            return {}
         thermostats = self.coordinator.data.get("thermostats", [])
-        
+
         return {
             "total_thermostats": len(thermostats),
         }
@@ -230,6 +242,8 @@ class ContromeRoomAverageValvePositionSensor(CoordinatorEntity, SensorEntity):
 
     def _get_thermostat(self):
         """Get the thermostat from coordinator data."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         return next((t for t in thermostats if t.device_id == self._device_id), None)
 
@@ -309,11 +323,15 @@ class ContromeRoomBasedHeatingDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def gateway(self) -> Gateway | None:
         """Get the gateway data from coordinator."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("gateway")
 
     @property
     def native_value(self) -> float | None:
         """Return the average of all room average valve positions."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         room_averages = []
         
@@ -346,8 +364,10 @@ class ContromeRoomBasedHeatingDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
+        if not self.coordinator.data:
+            return {}
         thermostats = self.coordinator.data.get("thermostats", [])
-        
+
         attrs = {
             "total_rooms": len(thermostats),
             "calculation_method": "room_average",
@@ -382,11 +402,15 @@ class ContromeRoomsHighDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def gateway(self) -> Gateway | None:
         """Get the gateway data from coordinator."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("gateway")
 
     @property
     def native_value(self) -> int | None:
         """Return the number of rooms with average valve position >80%."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         high_demand_count = 0
         
@@ -417,8 +441,10 @@ class ContromeRoomsHighDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
+        if not self.coordinator.data:
+            return {}
         thermostats = self.coordinator.data.get("thermostats", [])
-        
+
         high_demand_rooms = []
         for t in thermostats:
             if t.valve_positions:
@@ -455,11 +481,15 @@ class ContromeRoomsLowDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def gateway(self) -> Gateway | None:
         """Get the gateway data from coordinator."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("gateway")
 
     @property
     def native_value(self) -> int | None:
         """Return the number of rooms with average valve position <20%."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         low_demand_count = 0
         
@@ -490,8 +520,10 @@ class ContromeRoomsLowDemandSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
+        if not self.coordinator.data:
+            return {}
         thermostats = self.coordinator.data.get("thermostats", [])
-        
+
         low_demand_rooms = []
         for t in thermostats:
             if t.valve_positions:
@@ -539,6 +571,8 @@ class ContromeValvePositionSensor(CoordinatorEntity, SensorEntity):
 
     def _get_thermostat(self):
         """Get the thermostat from coordinator data."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         return next((t for t in thermostats if t.device_id == self._device_id), None)
 
@@ -644,6 +678,8 @@ class ContromeReturnFlowTemperatureSensor(CoordinatorEntity, SensorEntity):
 
     def _get_thermostat(self):
         """Get the thermostat from coordinator data."""
+        if not self.coordinator.data:
+            return None
         thermostats = self.coordinator.data.get("thermostats", [])
         return next((t for t in thermostats if t.device_id == self._device_id), None)
 

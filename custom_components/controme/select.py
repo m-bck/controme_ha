@@ -63,6 +63,8 @@ class ContromeSelectBase(CoordinatorEntity, SelectEntity):
     @property
     def thermostat(self) -> Thermostat | None:
         """Get the current thermostat data from coordinator."""
+        if not self.coordinator.data:
+            return None
         thermostats: list[Thermostat] = self.coordinator.data.get("thermostats", [])
         return next((t for t in thermostats if t.device_id == self._device_id), None)
 

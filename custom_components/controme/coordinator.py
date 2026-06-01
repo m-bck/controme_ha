@@ -84,4 +84,7 @@ class ContromeDataUpdateCoordinator(DataUpdateCoordinator):
             
         except Exception as err:
             _LOGGER.error("Error updating Controme data: %s", err)
+            if self.data is not None:
+                _LOGGER.warning("Returning last known good data due to update failure")
+                return self.data
             raise UpdateFailed(f"Error communicating with Controme: {err}") from err
