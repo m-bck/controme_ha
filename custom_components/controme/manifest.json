@@ -10,7 +10,7 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/m-bck/controme_ha/issues",
     "requirements": [
-        "controme-scraper>=0.1.0"
+        "controme-scraper>=0.2.1"
     ],
     "version": "1.1.1"
 }
